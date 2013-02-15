@@ -8,10 +8,12 @@ ascii_resolution  =  3
 
 
 class ASCII:
-    def __init__(self, img, step = 3, contrast = 128):
+    def __init__(self, img, step = 3, contrast = 128, invert = True, multiple = 2):
         self.img = img
         self.contrast = contrast
         self.step = step 
+        self.invert = invert
+        self.multiple = multiple
         self.row = 0
         self.cols, self.rows = img.size
 
@@ -36,10 +38,12 @@ class ASCII:
             grid = self.grid(x)
             chars = self.find_characters(grid)
             if len(chars) > 0:
-                char = chars[randint(0, len(chars) - 1)]
+                char = ''
+                for m in range(0, self.multiple):
+                    char += chars[randint(0, len(chars) - 1)]
                 ascii += char
             else:
-                ascii += ' '
+                ascii += '  '
         return ascii
 
     def find_characters(self, grid):
@@ -63,7 +67,9 @@ class ASCII:
         if x > self.cols or y >= self.rows:
             return 0
         lum = 255 - self.img.getpixel((x, y))
-        return 1 if lum < self.contrast else 0 
+        pos = 0 if self.invert else 1
+        neg = 1 if self.invert else 0
+        return neg if lum < self.contrast else pos 
 
 
 
@@ -93,11 +99,13 @@ def main():
             help='The width in characters')
     parser.add_argument('-c', '--contrast', type=int, default=128, 
             help='The contrast (an int between 0 and 256)')
+    parser.add_argument('-i', '--invert', action='store_true', 
+            help='Invert the image')
 
     args = parser.parse_args()
 
     gray = prepare_image(args.img, args.width)
-    ascii = ASCII(gray, contrast = args.contrast)
+    ascii = ASCII(gray, contrast = args.contrast, invert = args.invert)
     for line in ascii:
         print line
     print "Printed %d x %d image" % (ascii.width(), ascii.height())
