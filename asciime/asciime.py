@@ -2,6 +2,8 @@
 import argparse
 import ascii_map
 from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
 from random import randint
 
 ascii_resolution  =  3
@@ -101,14 +103,32 @@ def main():
             help='The contrast (an int between 0 and 256)')
     parser.add_argument('-i', '--invert', action='store_true', 
             help='Invert the image')
+    parser.add_argument('-f', '--font',
+            help='The .ttf font to use')
 
     args = parser.parse_args()
 
     gray = prepare_image(args.img, args.width)
     ascii = ASCII(gray, contrast = args.contrast, invert = args.invert)
+
+    if args.font:
+        font_size = 30 
+        bg = "black" if args.invert else "white"
+        fg = "white" if args.invert else "black"
+        ascii_image = Image.new("RGB", (ascii.width() * font_size, ascii.height() * font_size), bg)
+        ascii_draw = ImageDraw.Draw(ascii_image)
+        ascii_font = ImageFont.truetype(args.font, font_size)
+
+    row = 0
     for line in ascii:
         print line
+        if args.font:
+            ascii_draw.text((0, row * font_size), line, font = ascii_font, fill = fg)
+        row += 1
     print "Printed %d x %d image" % (ascii.width(), ascii.height())
+    if args.font:
+        ascii_image.show()
+ 
 
 if __name__ == '__main__':
     main()
