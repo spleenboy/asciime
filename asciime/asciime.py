@@ -8,20 +8,21 @@ ascii_resolution  =  3
 
 
 class ASCII:
-    def __init__(self, img, step = 3, contrast = 128, invert = True, multiple = 2):
+    def __init__(self, img, step = 5, grid = (3, 3), contrast = 128, invert = True, multiple = 1):
         self.img = img
         self.contrast = contrast
         self.step = step 
+        self.grid = grid
         self.invert = invert
         self.multiple = multiple
         self.row = 0
         self.cols, self.rows = img.size
 
     def width(self):
-        return self.cols / self.step
+        return self.cols / self.grid[0]
 
     def height(self):
-        return self.rows / self.step
+        return self.rows / self.grid[1]
 
     def __iter__(self):
         return self 
@@ -34,8 +35,8 @@ class ASCII:
 
     def line(self):
         ascii = ""
-        for x in xrange(0, self.cols, self.step):
-            grid = self.grid(x)
+        for x in xrange(0, self.cols, self.grid[0]):
+            grid = self.get_grid(x)
             chars = self.find_characters(grid)
             if len(chars) > 0:
                 char = ''
@@ -53,12 +54,11 @@ class ASCII:
                 return ascii_map.characters[x + 1]
         return [' ']
 
-
     # Returns a 0/1 grid
-    def grid(self, origin):
+    def get_grid(self, origin):
         grid = []
-        for x in range(origin, origin + self.step):
-            for y in range(self.row, self.row + self.step):
+        for x in range(origin, origin + self.grid[0]):
+            for y in range(self.row, self.row + self.grid[1]):
                 grid.append(self.value(x, y))
         return grid
 
