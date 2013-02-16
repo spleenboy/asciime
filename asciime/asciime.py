@@ -105,6 +105,8 @@ def main():
             help='Invert the image')
     parser.add_argument('-f', '--font',
             help='The .ttf font to use')
+    parser.add_argument('-e', '--export', type=argparse.FileType('w'),
+            help="The path to a file export location for the image")
 
     args = parser.parse_args()
 
@@ -128,6 +130,8 @@ def main():
     print "Printed %d x %d image" % (ascii.width(), ascii.height())
     if args.font:
         ascii_image.show()
+        if args.export:
+            ascii_image.save(args.export)
  
 
 if __name__ == '__main__':
