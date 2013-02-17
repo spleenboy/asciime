@@ -10,7 +10,7 @@ ascii_resolution  =  3
 
 
 class ASCII:
-    def __init__(self, img, step = 5, grid = (3, 3), contrast = 128, invert = True, multiple = 1):
+    def __init__(self, img, step = 6, grid = (3, 3), contrast = 128, invert = True, multiple = 1):
         self.img = img
         self.contrast = contrast
         self.step = step 
@@ -18,6 +18,7 @@ class ASCII:
         self.invert = invert
         self.multiple = multiple
         self.row = 0
+        self.row_skip = step / grid[1]
         self.cols, self.rows = img.size
 
     def width(self):
@@ -46,7 +47,7 @@ class ASCII:
                     char += chars[randint(0, len(chars) - 1)]
                 ascii += char
             else:
-                ascii += '  '
+                ascii += '?'
         return ascii
 
     def find_characters(self, grid):
@@ -54,19 +55,21 @@ class ASCII:
             chars = ascii_map.characters[x]
             if grid == chars:
                 return ascii_map.characters[x + 1]
-        return [' ']
+        return ['?']
 
     # Returns a 0/1 grid
     def get_grid(self, origin):
         grid = []
-        for x in range(origin, origin + self.grid[0]):
-            for y in range(self.row, self.row + self.grid[1]):
+        top_y = self.row + (self.grid[1] * self.row_skip)
+        top_x = origin + self.grid[0]
+        for y in xrange(self.row, top_y, self.row_skip):
+            for x in xrange(origin, top_x):
                 grid.append(self.value(x, y))
         return grid
 
     # Returns a 0 or 1 based on the luminosity of the pixel
     def value(self, x, y):
-        if x > self.cols or y >= self.rows:
+        if x >= self.cols or y >= self.rows:
             return 0
         lum = 255 - self.img.getpixel((x, y))
         pos = 0 if self.invert else 1
