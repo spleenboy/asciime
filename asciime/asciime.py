@@ -4,6 +4,8 @@ import ascii_map
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
+from StringIO import StringIO
+from urllib2 import urlopen
 from random import randint
 
 ascii_resolution  =  3
@@ -94,12 +96,19 @@ def image_resize(img, width):
     resized = img.resize((new_width, new_height), Image.ANTIALIAS)
     return resized
 
+def get_file_from_url(url):
+    rsp = urlopen(url)
+    file = StringIO(rsp.read())
+    return file
+
 def main():
 
     parser = argparse.ArgumentParser(
             description='Turn an image into ASCII art')
-    parser.add_argument('img', type=argparse.FileType('r'),
+    parser.add_argument('--img', type=argparse.FileType('r'), nargs='?',
             help='The image to manipulate')
+    parser.add_argument('--url', type=str, nargs='?',
+            help='A url path to an image file')
     parser.add_argument('-w', '--width', type=int, default=30, 
             help='The width in characters')
     parser.add_argument('-c', '--contrast', type=int, default=128, 
@@ -113,7 +122,16 @@ def main():
 
     args = parser.parse_args()
 
-    gray = prepare_image(args.img, args.width)
+    if args.img:
+        img = args.img
+    elif args.url:
+        img = get_file_from_url(args.url)
+    else:
+        parser.error()
+        return
+
+    gray = prepare_image(img, args.width)
+    gray.show()
     ascii = ASCII(gray, contrast = args.contrast, invert = args.invert)
 
     if args.font:
