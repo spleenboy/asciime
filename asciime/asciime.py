@@ -21,7 +21,7 @@ class ASCII:
         self.grid = grid
         self.invert = invert
         self.multiple = multiple
-        self.row = 0
+        self.row = 0 - step 
         self.row_skip = step / grid[1]
         self.cols, self.rows = img.size
 
@@ -157,7 +157,6 @@ def main():
         return
 
     gray = prepare_image(img, args.width)
-    gray.show()
     ascii = ASCII(gray, contrast = args.contrast, invert = args.invert)
 
     if args.font:
