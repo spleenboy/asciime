@@ -1,6 +1,8 @@
 #! /usr/bin/python
 import argparse
 import ascii_map
+import imghdr
+import re
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
@@ -96,10 +98,33 @@ def image_resize(img, width):
     resized = img.resize((new_width, new_height), Image.ANTIALIAS)
     return resized
 
+
 def get_file_from_url(url):
     rsp = urlopen(url)
     file = StringIO(rsp.read())
     return file
+
+
+def find_image_file_at_url(url):
+    file = get_file_from_url(url)
+    type = imghdr.what(file)
+
+    # Return a legitimate image file
+    if type in ('jpeg', 'jpg', 'png', 'gif'):
+        print "Loaded " + url
+        return file
+
+    # Otherwise, parse the text for a image path and return that instead
+    contents = file.getvalue()
+
+    # Instagram uses the css class 'photo', Twitter: 'media-slideshow-image'
+    pattern = '<img class="photo|media-slideshow-image"[^>]+src="(?P<src>.+?)"'
+    match = re.search(pattern, contents)
+    if match:
+        return find_image_file_at_url(match.group('src'))
+
+    return None
+
 
 def main():
 
@@ -125,9 +150,10 @@ def main():
     if args.img:
         img = args.img
     elif args.url:
-        img = get_file_from_url(args.url)
-    else:
-        parser.error()
+        img = find_image_file_at_url(args.url)
+
+    if img is None:
+        parser.print_help()
         return
 
     gray = prepare_image(img, args.width)
